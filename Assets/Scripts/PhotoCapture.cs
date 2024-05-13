@@ -9,8 +9,10 @@ public class NewBehaviourScript : MonoBehaviour
     [SerializeField] private Image photoDisplayArea;
     [SerializeField] private GameObject photoFrame;
 
-    private const int height = 800, width = height;
+    [Header("Photo Fader Effect")]
+    [SerializeField] private Animator fadingAnimation;
 
+    private const int height = 800, width = height;
     private Texture2D screenCapture; // The photo we're capturing
     private bool viewingPhoto;
     
@@ -51,8 +53,8 @@ public class NewBehaviourScript : MonoBehaviour
 
         // Set where the photo area is going to be and spawn the sprite
         photoDisplayArea.sprite = photoSprite;
-
         photoFrame.SetActive(true);
+        fadingAnimation.Play("photoFade");
     }
 
     void RemovePhoto()
