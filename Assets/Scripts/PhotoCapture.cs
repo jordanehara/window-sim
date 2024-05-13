@@ -1,4 +1,5 @@
 using System.Collections;
+using System.ComponentModel.Design;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,10 +7,12 @@ public class NewBehaviourScript : MonoBehaviour
 {
     [Header("Photo taker")]
     [SerializeField] private Image photoDisplayArea;
+    [SerializeField] private GameObject photoFrame;
 
     private const int height = 800, width = height;
 
     private Texture2D screenCapture; // The photo we're capturing
+    private bool viewingPhoto;
     
     private void Start()
     {
@@ -20,12 +23,18 @@ public class NewBehaviourScript : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            StartCoroutine(CapturePhoto());
+            if (!viewingPhoto)
+                StartCoroutine(CapturePhoto());
+            else
+                RemovePhoto();
         }
     }
 
     IEnumerator CapturePhoto()
     {
+        // Camera UI elements remove
+        viewingPhoto = true;
+
         yield return new WaitForEndOfFrame(); // make sure everything is rendered
          
         Rect regionToRead = new Rect(Screen.width/2-height/2, Screen.height/2-width/2, height, width); // area to "read pixels"
@@ -42,5 +51,13 @@ public class NewBehaviourScript : MonoBehaviour
 
         // Set where the photo area is going to be and spawn the sprite
         photoDisplayArea.sprite = photoSprite;
+
+        photoFrame.SetActive(true);
+    }
+
+    void RemovePhoto()
+    {
+        viewingPhoto = false;
+        photoFrame.SetActive(false);
     }
 }
