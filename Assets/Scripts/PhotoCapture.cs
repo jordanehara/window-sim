@@ -8,6 +8,7 @@ public class NewBehaviourScript : MonoBehaviour
     [Header("Photo taker")]
     [SerializeField] private Image photoDisplayArea;
     [SerializeField] private GameObject photoFrame;
+    [SerializeField] private GameObject cameraUI;
 
     [Header("Photo Fader Effect")]
     [SerializeField] private Animator fadingAnimation;
@@ -34,7 +35,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     IEnumerator CapturePhoto()
     {
-        // Camera UI elements remove
+        cameraUI.SetActive(false);
         viewingPhoto = true;
 
         yield return new WaitForEndOfFrame(); // make sure everything is rendered
@@ -61,5 +62,6 @@ public class NewBehaviourScript : MonoBehaviour
     {
         viewingPhoto = false;
         photoFrame.SetActive(false);
+        cameraUI.SetActive(true);
     }
 }
