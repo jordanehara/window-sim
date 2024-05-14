@@ -39,7 +39,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Start()
     {
-        zoomLevel = photoModeCamera.orthographicSize;
+        zoomLevel = photoModeCamera.orthographicSize - 1f;
         screenCapture = new Texture2D(width, height, TextureFormat.RGB24, false);
     }
 
@@ -48,7 +48,7 @@ public class NewBehaviourScript : MonoBehaviour
         if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
         {
             RemovePhoto();
-            ResetCamera();
+            ResetCameraZoom();
 
             // Reset the UI 
             cameraManager.SetActive(false);
@@ -80,10 +80,10 @@ public class NewBehaviourScript : MonoBehaviour
         photoModeCamera.orthographicSize = Mathf.SmoothDamp(photoModeCamera.orthographicSize, zoomLevel, ref velocity, smoothTime);
     }
 
-    void ResetCamera()
+    void ResetCameraZoom()
     {
         photoModeCamera.orthographicSize = maxZoomLevel;
-        zoomLevel = maxZoomLevel;
+        zoomLevel = photoModeCamera.orthographicSize - 1f;
     }
 
     IEnumerator CapturePhoto()
