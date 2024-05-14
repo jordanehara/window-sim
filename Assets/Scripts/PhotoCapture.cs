@@ -7,8 +7,10 @@ using UnityEngine.UI;
 public class NewBehaviourScript : MonoBehaviour
 {
     #region Unity object input fields
-    [Header ("Camera")]
-    [SerializeField] private Camera camera;
+    [Header ("General")]
+    [SerializeField] private Camera photoModeCamera;
+    [SerializeField] private GameObject UIOverlay;
+    [SerializeField] private GameObject cameraManager;
 
     [Header("Photo taker")]
     [SerializeField] private Image photoDisplayArea;
@@ -37,20 +39,33 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Start()
     {
-        zoomLevel = camera.orthographicSize;
+        zoomLevel = photoModeCamera.orthographicSize;
         screenCapture = new Texture2D(width, height, TextureFormat.RGB24, false);
     }
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
+        {
+            RemovePhoto();
+            ResetCamera();
+
+            // Reset the UI 
+            cameraManager.SetActive(false);
+            UIOverlay.SetActive(true);
+        }
+        else if (Input.GetMouseButtonDown(0)) // Take a picture
         {
             if (!viewingPhoto)
                 StartCoroutine(CapturePhoto());
             else
                 RemovePhoto();
         }
-        else
+        else if (Input.GetMouseButtonDown(1)) // Pan around
+        {
+
+        }
+        else // zoom into the background
         {
             if (!viewingPhoto)
                 Zoom();
@@ -62,7 +77,13 @@ public class NewBehaviourScript : MonoBehaviour
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         zoomLevel -= scroll * zoomMultiplier;
         zoomLevel = Mathf.Clamp(zoomLevel, minZoomLevel, maxZoomLevel);
-        camera.orthographicSize = Mathf.SmoothDamp(camera.orthographicSize, zoomLevel, ref velocity, smoothTime);
+        photoModeCamera.orthographicSize = Mathf.SmoothDamp(photoModeCamera.orthographicSize, zoomLevel, ref velocity, smoothTime);
+    }
+
+    void ResetCamera()
+    {
+        photoModeCamera.orthographicSize = maxZoomLevel;
+        zoomLevel = maxZoomLevel;
     }
 
     IEnumerator CapturePhoto()
