@@ -8,9 +8,12 @@ public class NewBehaviourScript : MonoBehaviour
     [Header("Photo taker")]
     [SerializeField] private Image photoDisplayArea;
     [SerializeField] private GameObject photoFrame;
+    [SerializeField] private GameObject cameraUI;
+
+    [Header("Photo Fader Effect")]
+    [SerializeField] private Animator fadingAnimation;
 
     private const int height = 800, width = height;
-
     private Texture2D screenCapture; // The photo we're capturing
     private bool viewingPhoto;
     
@@ -32,7 +35,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     IEnumerator CapturePhoto()
     {
-        // Camera UI elements remove
+        cameraUI.SetActive(false);
         viewingPhoto = true;
 
         yield return new WaitForEndOfFrame(); // make sure everything is rendered
@@ -51,13 +54,14 @@ public class NewBehaviourScript : MonoBehaviour
 
         // Set where the photo area is going to be and spawn the sprite
         photoDisplayArea.sprite = photoSprite;
-
         photoFrame.SetActive(true);
+        fadingAnimation.Play("photoFade");
     }
 
     void RemovePhoto()
     {
         viewingPhoto = false;
         photoFrame.SetActive(false);
+        cameraUI.SetActive(true);
     }
 }
