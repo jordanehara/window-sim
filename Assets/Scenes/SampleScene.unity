@@ -703,7 +703,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f9cfb0932ccf68d4da808b41ae1e65c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  photoModeCamera: {fileID: 519420031}
+  _camera: {fileID: 519420031}
+  background: {fileID: 643480676}
   UIOverlay: {fileID: 1478511640}
   cameraManager: {fileID: 906371538}
   photoDisplayArea: {fileID: 989405214}
