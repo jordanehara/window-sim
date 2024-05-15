@@ -1,5 +1,6 @@
 using System.Collections;
 using System.ComponentModel.Design;
+using UnityEditor;
 using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.UI;
@@ -44,7 +45,9 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Start()
     {
-        // set map extent
+        Cursor.visible = false; // Mouse will be moving with the photo zone
+
+        // Set map extent
         mapMinX = background.transform.position.x - background.bounds.size.x / 2f;
         mapMaxX = background.transform.position.x + background.bounds.size.x / 2f;
 
@@ -58,6 +61,9 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Update()
     {
+        // Move the photo frame UI as the new "cursor" 
+        cameraUI.transform.position = Input.mousePosition;
+
         if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
         {
             Reset();
@@ -82,6 +88,7 @@ public class NewBehaviourScript : MonoBehaviour
         ResetCameraPosition();
 
         // Reset the UI 
+        Cursor.visible = true;
         cameraManager.SetActive(false);
         UIOverlay.SetActive(true);
     }
@@ -106,7 +113,6 @@ public class NewBehaviourScript : MonoBehaviour
             newPosition = ClampCamera(newPosition);
             _camera.transform.position = Vector3.SmoothDamp(_camera.transform.position, newPosition, ref panVelocity, smoothTime);
         }
-
 
         // Zoom
         float scroll = Input.GetAxis("Mouse ScrollWheel");
@@ -146,12 +152,12 @@ public class NewBehaviourScript : MonoBehaviour
         cameraUI.SetActive(false);
         viewingPhoto = true;
 
-        yield return new WaitForEndOfFrame(); // make sure everything is rendered
+        yield return new WaitForEndOfFrame(); // Make sure everything is rendered
          
-        Rect regionToRead = new Rect(Screen.width/2-photoHeight/2, Screen.height/2-photoWidth/2, photoHeight, photoWidth); // area to "read pixels"
+        Rect regionToRead = new Rect(Screen.width/2-photoHeight/2, Screen.height/2-photoWidth/2, photoHeight, photoWidth); // Area to "read pixels"
 
         screenCapture.ReadPixels(regionToRead, 0, 0, false);
-        screenCapture.Apply(); // expensive function
+        screenCapture.Apply(); // Expensive function
         ShowPhoto();
     }
 
