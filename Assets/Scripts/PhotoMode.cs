@@ -71,7 +71,9 @@ public class NewBehaviourScript : MonoBehaviour
         else if (Input.GetMouseButtonDown(0)) // Take a picture
         {
             if (!viewingPhoto)
+            {
                 StartCoroutine(CapturePhoto());
+            }
             else
                 RemovePhoto();
         }
@@ -84,6 +86,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     void Reset()
     {
+        // Reset camera components
         RemovePhoto();
         ResetCameraPosition();
 
