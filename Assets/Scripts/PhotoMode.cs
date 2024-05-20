@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public class NewBehaviourScript : MonoBehaviour
 {
     #region Unity object input fields
-    [Header ("General")]
+    [Header ("General Objects")]
     [SerializeField] private Camera _camera;
     [SerializeField] private SpriteRenderer background;
     [SerializeField] private GameObject UIOverlay;
