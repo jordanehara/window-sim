@@ -1,5 +1,6 @@
 using System.Collections;
 using System.ComponentModel.Design;
+using UnityEditor;
 using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.UI;
@@ -44,7 +45,9 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Start()
     {
-        // set map extent
+        Cursor.visible = false; // Mouse will be moving with the photo zone
+
+        // Set map extent
         mapMinX = background.transform.position.x - background.bounds.size.x / 2f;
         mapMaxX = background.transform.position.x + background.bounds.size.x / 2f;
 
@@ -58,6 +61,9 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Update()
     {
+        // Move the photo frame UI as the new "cursor" 
+        cameraUI.transform.position = ClampCameraUI(Input.mousePosition);
+
         if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
         {
             Reset();
@@ -65,7 +71,9 @@ public class NewBehaviourScript : MonoBehaviour
         else if (Input.GetMouseButtonDown(0)) // Take a picture
         {
             if (!viewingPhoto)
+            {
                 StartCoroutine(CapturePhoto());
+            }
             else
                 RemovePhoto();
         }
@@ -78,10 +86,12 @@ public class NewBehaviourScript : MonoBehaviour
 
     void Reset()
     {
+        // Reset camera components
         RemovePhoto();
         ResetCameraPosition();
 
         // Reset the UI 
+        Cursor.visible = true;
         cameraManager.SetActive(false);
         UIOverlay.SetActive(true);
     }
@@ -107,12 +117,20 @@ public class NewBehaviourScript : MonoBehaviour
             _camera.transform.position = Vector3.SmoothDamp(_camera.transform.position, newPosition, ref panVelocity, smoothTime);
         }
 
-
         // Zoom
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         zoomLevel -= scroll * zoomMultiplier;
         zoomLevel = Mathf.Clamp(zoomLevel, minZoomLevel, maxZoomLevel);
+        Vector3 newZoomPosition = ClampCamera(_camera.transform.position);
         _camera.orthographicSize = Mathf.SmoothDamp(_camera.orthographicSize, zoomLevel, ref zoomVelocity, smoothTime);
+        _camera.transform.position = Vector3.SmoothDamp(_camera.transform.position, newZoomPosition, ref panVelocity, smoothTime);
+    }
+
+    Vector3 ClampCameraUI(Vector3 targetPos)
+    {
+        var newPosX = Mathf.Clamp(targetPos.x, photoWidth/2, Screen.width - photoWidth/2);
+        var newPosY = Mathf.Clamp(targetPos.y, photoHeight/2, Screen.height - photoHeight/2);
+        return new Vector3(newPosX, newPosY, targetPos.z);
     }
 
     Vector3 ClampCamera(Vector3 targetPos)
@@ -146,12 +164,12 @@ public class NewBehaviourScript : MonoBehaviour
         cameraUI.SetActive(false);
         viewingPhoto = true;
 
-        yield return new WaitForEndOfFrame(); // make sure everything is rendered
-         
-        Rect regionToRead = new Rect(Screen.width/2-photoHeight/2, Screen.height/2-photoWidth/2, photoHeight, photoWidth); // area to "read pixels"
+        yield return new WaitForEndOfFrame(); // Make sure everything is rendered
+
+        Rect regionToRead = new Rect(cameraUI.transform.position.x - photoWidth/2, cameraUI.transform.position.y - photoWidth/2, photoHeight, photoWidth); // Area to "read pixels"
 
         screenCapture.ReadPixels(regionToRead, 0, 0, false);
-        screenCapture.Apply(); // expensive function
+        screenCapture.Apply(); // Expensive function
         ShowPhoto();
     }
 
