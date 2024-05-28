@@ -18,13 +18,14 @@ public class NewBehaviourScript : MonoBehaviour
     [SerializeField] private Image photoDisplayArea;
     [SerializeField] private GameObject photoFrame;
     [SerializeField] private GameObject cameraUI;
+    [SerializeField] private Image cameraUIImage;
 
     [Header("Photo Fader Effect")]
     [SerializeField] private Animator fadingAnimation;
     #endregion
 
     #region Photo capture variables
-    private const int photoHeight = 800, photoWidth = photoHeight;
+    private const int photoHeight = 800, photoWidth = photoHeight; // "resolution" of the photo
     private Texture2D screenCapture; // The photo we're capturing
     private bool viewingPhoto;
     #endregion
@@ -40,7 +41,6 @@ public class NewBehaviourScript : MonoBehaviour
     private float smoothTime = 0.1f;
     private Vector3 dragOrigin;
     private float mapMinX, mapMinY, mapMaxX, mapMaxY;
-
     #endregion
 
     private void Start()
@@ -128,8 +128,8 @@ public class NewBehaviourScript : MonoBehaviour
 
     Vector3 ClampCameraUI(Vector3 targetPos)
     {
-        var newPosX = Mathf.Clamp(targetPos.x, photoWidth/2, Screen.width - photoWidth/2);
-        var newPosY = Mathf.Clamp(targetPos.y, photoHeight/2, Screen.height - photoHeight/2);
+        var newPosX = Mathf.Clamp(targetPos.x, cameraUIImage.rectTransform.rect.width/2, Screen.width - cameraUIImage.rectTransform.rect.width/2);
+        var newPosY = Mathf.Clamp(targetPos.y, cameraUIImage.rectTransform.rect.height/2, Screen.height - cameraUIImage.rectTransform.rect.height/2);
         return new Vector3(newPosX, newPosY, targetPos.z);
     }
 
@@ -161,12 +161,16 @@ public class NewBehaviourScript : MonoBehaviour
     #region Photo methods
     IEnumerator CapturePhoto()
     {
+        float width = cameraUIImage.rectTransform.rect.width;
+        float height = cameraUIImage.rectTransform.rect.height;
+        
         cameraUI.SetActive(false);
         viewingPhoto = true;
 
         yield return new WaitForEndOfFrame(); // Make sure everything is rendered
 
-        Rect regionToRead = new Rect(cameraUI.transform.position.x - photoWidth/2, cameraUI.transform.position.y - photoWidth/2, photoHeight, photoWidth); // Area to "read pixels"
+        Rect regionToRead = new Rect(cameraUI.transform.position.x - width/2, cameraUI.transform.position.y - height/2, 
+        width, height); // Area to "read pixels"
 
         screenCapture.ReadPixels(regionToRead, 0, 0, false);
         screenCapture.Apply(); // Expensive function
@@ -176,7 +180,7 @@ public class NewBehaviourScript : MonoBehaviour
     void ShowPhoto()
     {
         // Create a sprite that will display the image
-        Sprite photoSprite = Sprite.Create(screenCapture, new Rect(0.0f, 0.0f, photoHeight, photoWidth), new Vector2(0.5f, 0.5f), 100.0f);
+        Sprite photoSprite = Sprite.Create(screenCapture, new Rect(0.0f, 0.0f, cameraUIImage.rectTransform.rect.width, cameraUIImage.rectTransform.rect.height), new Vector2(0.5f, 0.5f), 100.0f);
 
         // Set where the photo area is going to be and spawn the sprite
         photoDisplayArea.sprite = photoSprite;
