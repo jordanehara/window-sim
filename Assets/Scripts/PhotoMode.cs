@@ -62,7 +62,7 @@ public class NewBehaviourScript : MonoBehaviour
     private void Update()
     {
         // Move the photo frame UI as the new "cursor" 
-        cameraUI.transform.position = Input.mousePosition;
+        cameraUI.transform.position = ClampCameraUI(Input.mousePosition);
 
         if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
         {
@@ -121,7 +121,16 @@ public class NewBehaviourScript : MonoBehaviour
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         zoomLevel -= scroll * zoomMultiplier;
         zoomLevel = Mathf.Clamp(zoomLevel, minZoomLevel, maxZoomLevel);
+        Vector3 newZoomPosition = ClampCamera(_camera.transform.position);
         _camera.orthographicSize = Mathf.SmoothDamp(_camera.orthographicSize, zoomLevel, ref zoomVelocity, smoothTime);
+        _camera.transform.position = Vector3.SmoothDamp(_camera.transform.position, newZoomPosition, ref panVelocity, smoothTime);
+    }
+
+    Vector3 ClampCameraUI(Vector3 targetPos)
+    {
+        var newPosX = Mathf.Clamp(targetPos.x, photoWidth/2, Screen.width - photoWidth/2);
+        var newPosY = Mathf.Clamp(targetPos.y, photoHeight/2, Screen.height - photoHeight/2);
+        return new Vector3(newPosX, newPosY, targetPos.z);
     }
 
     Vector3 ClampCamera(Vector3 targetPos)
@@ -156,8 +165,8 @@ public class NewBehaviourScript : MonoBehaviour
         viewingPhoto = true;
 
         yield return new WaitForEndOfFrame(); // Make sure everything is rendered
-         
-        Rect regionToRead = new Rect(Screen.width/2-photoHeight/2, Screen.height/2-photoWidth/2, photoHeight, photoWidth); // Area to "read pixels"
+
+        Rect regionToRead = new Rect(cameraUI.transform.position.x - photoWidth/2, cameraUI.transform.position.y - photoWidth/2, photoHeight, photoWidth); // Area to "read pixels"
 
         screenCapture.ReadPixels(regionToRead, 0, 0, false);
         screenCapture.Apply(); // Expensive function
