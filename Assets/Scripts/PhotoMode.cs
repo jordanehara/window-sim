@@ -1,5 +1,7 @@
+using System;
 using System.Collections;
 using System.ComponentModel.Design;
+using System.IO;
 using UnityEditor;
 using UnityEditor.Search;
 using UnityEngine;
@@ -19,6 +21,7 @@ public class NewBehaviourScript : MonoBehaviour
     [SerializeField] private GameObject photoFrame;
     [SerializeField] private GameObject cameraUI;
     [SerializeField] private Image cameraUIImage;
+    [SerializeField] private Button saveButton;
 
     [Header("Photo Fader Effect")]
     [SerializeField] private Animator fadingAnimation;
@@ -27,7 +30,7 @@ public class NewBehaviourScript : MonoBehaviour
     #region Photo capture variables
     private const int photoHeight = 800, photoWidth = photoHeight; // "resolution" of the photo
     private Texture2D screenCapture; // The photo we're capturing
-    private bool viewingPhoto;
+    public bool viewingPhoto;
     #endregion
 
     #region Camera movement variables
@@ -46,6 +49,7 @@ public class NewBehaviourScript : MonoBehaviour
     private void Start()
     {
         Cursor.visible = false; // Mouse will be moving with the photo zone
+        cameraOriginalPosition = _camera.transform.position;
 
         // Set map extent
         mapMinX = background.transform.position.x - background.bounds.size.x / 2f;
@@ -54,7 +58,6 @@ public class NewBehaviourScript : MonoBehaviour
         mapMinY = background.transform.position.y - background.bounds.size.y / 2f;
         mapMaxY = background.transform.position.y + background.bounds.size.y / 2f;
 
-        cameraOriginalPosition = _camera.transform.position;
         zoomLevel = _camera.orthographicSize - 1f;
         screenCapture = new Texture2D(photoWidth, photoHeight, TextureFormat.RGB24, false);
     }
@@ -66,16 +69,15 @@ public class NewBehaviourScript : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
         {
-            Reset();
+            if (!viewingPhoto)
+                StartCoroutine(Reset());
+            else
+                RemovePhoto();
         }
         else if (Input.GetMouseButtonDown(0)) // Take a picture
         {
             if (!viewingPhoto)
-            {
                 StartCoroutine(CapturePhoto());
-            }
-            else
-                RemovePhoto();
         }
         else // Zoom or pan the background
         {
@@ -84,13 +86,15 @@ public class NewBehaviourScript : MonoBehaviour
         }
     }
 
-    void Reset()
+    IEnumerator Reset()
     {
+        yield return new WaitForEndOfFrame(); // Make sure everything is rendered
+
         // Reset camera components
         RemovePhoto();
         ResetCameraPosition();
 
-        // Reset the UI 
+        // Reset the UI
         Cursor.visible = true;
         cameraManager.SetActive(false);
         UIOverlay.SetActive(true);
@@ -186,13 +190,22 @@ public class NewBehaviourScript : MonoBehaviour
         photoDisplayArea.sprite = photoSprite;
         photoFrame.SetActive(true);
         fadingAnimation.Play("photoFade");
+        
+        // Show the cursor so that the save button can be clicked
+        // Cursor.visible = true;
+    }
+
+    public void SavePhoto()
+    {
+        string now = DateTime.Now.ToString("yyyyMMddHHmmss") + ".png";
+        File.WriteAllBytes(@"C:\Users\Jordan\Desktop\PhotoTest\" + now, screenCapture.EncodeToPNG());
     }
 
     void RemovePhoto()
     {
-        viewingPhoto = false;
         photoFrame.SetActive(false);
         cameraUI.SetActive(true);
+        viewingPhoto = false;
     }
     #endregion
 }
