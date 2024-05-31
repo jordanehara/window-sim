@@ -69,10 +69,7 @@ public class NewBehaviourScript : MonoBehaviour
 
         if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
         {
-            if (!viewingPhoto)
-                StartCoroutine(Reset());
-            else
-                RemovePhoto();
+            Reset();
         }
         else if (Input.GetMouseButtonDown(0)) // Take a picture
         {
@@ -86,10 +83,8 @@ public class NewBehaviourScript : MonoBehaviour
         }
     }
 
-    IEnumerator Reset()
+    void Reset()
     {
-        yield return new WaitForEndOfFrame(); // Make sure everything is rendered
-
         // Reset camera components
         RemovePhoto();
         ResetCameraPosition();
@@ -191,14 +186,14 @@ public class NewBehaviourScript : MonoBehaviour
         photoFrame.SetActive(true);
         fadingAnimation.Play("photoFade");
         
-        // Show the cursor so that the save button can be clicked
+        // Show the cursor so that the save  button can be clicked
         // Cursor.visible = true;
     }
 
     public void SavePhoto()
     {
         string now = DateTime.Now.ToString("yyyyMMddHHmmss") + ".png";
-        File.WriteAllBytes(@"C:\Users\Jordan\Desktop\PhotoTest\" + now, screenCapture.EncodeToPNG());
+        File.WriteAllBytes(@"C:\Users\jorda\Documents\Photos\" + now, screenCapture.EncodeToPNG());
     }
 
     void RemovePhoto()
