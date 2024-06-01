@@ -9,9 +9,8 @@ public class UILogic : MonoBehaviour
     [SerializeField] private GameObject PhotoFrame;
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        CameraManager.SetActive(false);
-        PhotoFrame.SetActive(false);
+        
     }
 }

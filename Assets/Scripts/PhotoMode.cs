@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.ComponentModel.Design;
 using System.IO;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.Search;
 using UnityEngine;
@@ -28,7 +29,6 @@ public class NewBehaviourScript : MonoBehaviour
     #endregion
 
     #region Photo capture variables
-    private const int photoHeight = 800, photoWidth = photoHeight; // "resolution" of the photo
     private Texture2D screenCapture; // The photo we're capturing
     public bool viewingPhoto;
     #endregion
@@ -48,6 +48,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("Start() disable cursor");
         Cursor.visible = false; // Mouse will be moving with the photo zone
         cameraOriginalPosition = _camera.transform.position;
 
@@ -59,7 +60,7 @@ public class NewBehaviourScript : MonoBehaviour
         mapMaxY = background.transform.position.y + background.bounds.size.y / 2f;
 
         zoomLevel = _camera.orthographicSize - 1f;
-        screenCapture = new Texture2D(photoWidth, photoHeight, TextureFormat.RGB24, false);
+        screenCapture = new Texture2D(Convert.ToInt32(cameraUIImage.rectTransform.rect.width), Convert.ToInt32(cameraUIImage.rectTransform.rect.height), TextureFormat.RGB24, false);
     }
 
     private void Update()
@@ -67,14 +68,31 @@ public class NewBehaviourScript : MonoBehaviour
         // Move the photo frame UI as the new "cursor" 
         cameraUI.transform.position = ClampCameraUI(Input.mousePosition);
 
-        if (Input.GetKey(KeyCode.Escape)) // Exit camera mode
+        if (Input.GetKeyDown(KeyCode.Escape)) // Exit camera mode
         {
-            Reset();
+            Debug.Log("Update() ViewingPhoto:" + viewingPhoto);
+
+            if (!viewingPhoto)
+            {
+                Debug.Log("Update() Cursor enabled");
+                Cursor.visible = true;
+                Reset();
+            }
+            else
+            {
+                Debug.Log("Update() Cursor disabled");
+                Cursor.visible = false;
+                RemovePhoto();
+            }
         }
         else if (Input.GetMouseButtonDown(0)) // Take a picture
         {
             if (!viewingPhoto)
+            {
+                Debug.Log("Entering CapturePhoto()");
                 StartCoroutine(CapturePhoto());
+                Debug.Log("Exiting CapturePhoto()");
+            }
         }
         else // Zoom or pan the background
         {
@@ -85,12 +103,13 @@ public class NewBehaviourScript : MonoBehaviour
 
     void Reset()
     {
+        Debug.Log("Reset()");
         // Reset camera components
-        RemovePhoto();
+        if (viewingPhoto)
+            RemovePhoto();
         ResetCameraPosition();
 
         // Reset the UI
-        Cursor.visible = true;
         cameraManager.SetActive(false);
         UIOverlay.SetActive(true);
     }
@@ -164,7 +183,6 @@ public class NewBehaviourScript : MonoBehaviour
         float height = cameraUIImage.rectTransform.rect.height;
         
         cameraUI.SetActive(false);
-        viewingPhoto = true;
 
         yield return new WaitForEndOfFrame(); // Make sure everything is rendered
 
@@ -178,6 +196,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     void ShowPhoto()
     {
+        viewingPhoto = true;
         // Create a sprite that will display the image
         Sprite photoSprite = Sprite.Create(screenCapture, new Rect(0.0f, 0.0f, cameraUIImage.rectTransform.rect.width, cameraUIImage.rectTransform.rect.height), new Vector2(0.5f, 0.5f), 100.0f);
 
@@ -187,7 +206,8 @@ public class NewBehaviourScript : MonoBehaviour
         fadingAnimation.Play("photoFade");
         
         // Show the cursor so that the save  button can be clicked
-        // Cursor.visible = true;
+        Debug.Log("ShowPhoto() enable cursor");
+        Cursor.visible = true;
     }
 
     public void SavePhoto()
@@ -198,6 +218,7 @@ public class NewBehaviourScript : MonoBehaviour
 
     void RemovePhoto()
     {
+        Debug.Log("RemovePhoto()");
         photoFrame.SetActive(false);
         cameraUI.SetActive(true);
         viewingPhoto = false;
