@@ -31,6 +31,7 @@ public class NewBehaviourScript : MonoBehaviour
     #region Photo capture variables
     private Texture2D screenCapture; // The photo we're capturing
     public bool viewingPhoto;
+    private float photoWidth, photoHeight;
     #endregion
 
     #region Camera movement variables
@@ -48,6 +49,10 @@ public class NewBehaviourScript : MonoBehaviour
 
     private void Start()
     {
+        // Set photo width and height
+        photoWidth = cameraUIImage.rectTransform.rect.width;
+        photoHeight = cameraUIImage.rectTransform.rect.height;
+
         Debug.Log("Start() disable cursor");
         Cursor.visible = false; // Mouse will be moving with the photo zone
         cameraOriginalPosition = _camera.transform.position;
@@ -60,7 +65,7 @@ public class NewBehaviourScript : MonoBehaviour
         mapMaxY = background.transform.position.y + background.bounds.size.y / 2f;
 
         zoomLevel = _camera.orthographicSize - 1f;
-        screenCapture = new Texture2D(Convert.ToInt32(cameraUIImage.rectTransform.rect.width), Convert.ToInt32(cameraUIImage.rectTransform.rect.height), TextureFormat.RGB24, false);
+        screenCapture = new Texture2D(Convert.ToInt32(photoWidth), Convert.ToInt32(photoHeight), TextureFormat.RGB24, false);
     }
 
     private void Update()
@@ -146,8 +151,8 @@ public class NewBehaviourScript : MonoBehaviour
 
     Vector3 ClampCameraUI(Vector3 targetPos)
     {
-        var newPosX = Mathf.Clamp(targetPos.x, cameraUIImage.rectTransform.rect.width/2, Screen.width - cameraUIImage.rectTransform.rect.width/2);
-        var newPosY = Mathf.Clamp(targetPos.y, cameraUIImage.rectTransform.rect.height/2, Screen.height - cameraUIImage.rectTransform.rect.height/2);
+        var newPosX = Mathf.Clamp(targetPos.x, photoWidth/2, Screen.width - photoWidth/2);
+        var newPosY = Mathf.Clamp(targetPos.y, photoHeight/2, Screen.height - photoHeight/2);
         return new Vector3(newPosX, newPosY, targetPos.z);
     }
 
@@ -178,16 +183,13 @@ public class NewBehaviourScript : MonoBehaviour
 
     #region Photo methods
     IEnumerator CapturePhoto()
-    {
-        float width = cameraUIImage.rectTransform.rect.width;
-        float height = cameraUIImage.rectTransform.rect.height;
-        
+    {        
         cameraUI.SetActive(false);
 
         yield return new WaitForEndOfFrame(); // Make sure everything is rendered
 
-        Rect regionToRead = new Rect(cameraUI.transform.position.x - width/2, cameraUI.transform.position.y - height/2, 
-        width, height); // Area to "read pixels"
+        Rect regionToRead = new Rect(cameraUI.transform.position.x - photoWidth/2, cameraUI.transform.position.y - photoHeight/2, 
+        photoWidth, photoHeight); // Area to "read pixels"
 
         screenCapture.ReadPixels(regionToRead, 0, 0, false);
         screenCapture.Apply(); // Expensive function
@@ -198,7 +200,7 @@ public class NewBehaviourScript : MonoBehaviour
     {
         viewingPhoto = true;
         // Create a sprite that will display the image
-        Sprite photoSprite = Sprite.Create(screenCapture, new Rect(0.0f, 0.0f, cameraUIImage.rectTransform.rect.width, cameraUIImage.rectTransform.rect.height), new Vector2(0.5f, 0.5f), 100.0f);
+        Sprite photoSprite = Sprite.Create(screenCapture, new Rect(0.0f, 0.0f, photoWidth, photoHeight), new Vector2(0.5f, 0.5f), 100.0f);
 
         // Set where the photo area is going to be and spawn the sprite
         photoDisplayArea.sprite = photoSprite;
